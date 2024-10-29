@@ -33,3 +33,28 @@ class Coach(models.Model):
     name = models.CharField(max_length=50)
     age = models.IntegerField(null=True, blank=True)
     team = models.ForeignKey(Team,on_delete=models.CASCADE, null=True, blank=True)
+
+class Position(models.Model):
+    position_name = models.CharField(max_length=50)
+    discription = models.TextField(blank=True, null=True)
+
+class Osoba(models.Model):
+    # GENDER_CHOICE = (
+    #     ('K', 'Kobieta'),
+    #     ('M', 'Mężczyzna'),
+    #     ('I', 'Inne')
+    # )
+    class Plec(models.IntegerChoices):
+        KOBIETA = 1, 'Kobieta'
+        MEZCZYZNA = 2, 'Mężczyzna'
+        INNE = 3, 'Inne'
+
+    gender = models.IntegerField(choices=Plec.choices, null=True , blank=True)
+    name = models.CharField(max_length=50)
+    surname = models.CharField(max_length=50)
+    # gender = models.CharField(max_length=1, choices=GENDER_CHOICE)
+    position = models.ForeignKey(Position, on_delete=models.CASCADE)
+    published_date = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} {self.surname}"
