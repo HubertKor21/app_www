@@ -1,22 +1,31 @@
-from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, generics
 from .models import Osoba, Position
 from .serializers import OsobaSerializer, PositionSerializer
 
-# Widoki dla Osoba
-class OsobaListView(generics.ListCreateAPIView):
-    queryset = Osoba.objects.all()
-    serializer_class = OsobaSerializer
+class OsobaAPIView(APIView):
+    def get(self, request, pk=None):
+        if pk:
+            osoba = Osoba.objects.get(pk=pk)
+            serializer = OsobaSerializer(osoba)
+            return Response(serializer.data)
+        osoby = Osoba.objects.all()
+        serializer = OsobaSerializer(osoby, many=True)
+        return Response(serializer.data)
 
-class OsobaDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Osoba.objects.all()
-    serializer_class = OsobaSerializer
+    def post(self, request):
+        serializer = OsobaSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class OsobaSearchView(generics.ListAPIView):
-    serializer_class = OsobaSerializer
+    def delete(self, request, pk):
+        osoba = Osoba.objects.get(pk=pk)
+        osoba.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def get_queryset(self):
-        query = self.request.query_params.get('name', '')
-        return Osoba.objects.filter(name__icontains=query)
 
 # Widoki dla Position
 class PositionListView(generics.ListCreateAPIView):
