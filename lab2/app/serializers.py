@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from .models import Team, Person, Coach, Osoba
+from .models import Team, Person, Coach, Osoba, Position
 
-# Serializer ręczny
 class TeamSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=60)
     country = serializers.CharField(max_length=2)
@@ -16,7 +15,6 @@ class TeamSerializer(serializers.Serializer):
         instance.save()
         return instance
 
-# Serializer oparty na ModelSerializer
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
@@ -30,4 +28,9 @@ class CoachSerializer(serializers.ModelSerializer):
 class OsobaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Osoba
-        fields = ['name', 'surname', 'gender', 'position', 'published_date']
+        fields = '__all__'
+
+class PositionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Position
+        fields = '__all__'
