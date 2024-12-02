@@ -53,7 +53,7 @@ class Osoba(models.Model):
     surname = models.CharField(max_length=50)
     position = models.ForeignKey(Position, on_delete=models.CASCADE)
     published_date = models.DateField(default=date.today)
-    owner = models.ForeignKey(User,on_delete=models.CASCADE)
+    wlasciciel = models.ForeignKey(User,on_delete=models.CASCADE)
 
     def clean(self):
         # Walidacja pola name - tylko litery
@@ -69,3 +69,8 @@ class Osoba(models.Model):
 
     def __str__(self):
         return f"{self.name} {self.surname}"
+
+    class Meta:
+        permissions = [
+            ("can_view_other_persons", "Can view other persons"),
+        ]

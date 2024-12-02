@@ -1,26 +1,27 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response 
 from rest_framework import status, generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions
 from .models import Osoba, Position
 from .serializers import OsobaSerializer, PositionSerializer
 from django.shortcuts import get_object_or_404
-
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 
 class OsobaAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, DjangoModelPermissions]
 
     def get(self, request, pk=None):
         if pk:
-            osoba = get_object_or_404(Osoba, pk=pk, wlasciciel=request.user)
+            osoba = get_object_or_404(Osoba, pk=pk)
+            if osoba.wlasciciel != request.user and not request.user.has_perm('app_name.can_view_other_persons'):
+                return Response({"error": "Nie masz uprawnień do tego obiektu"}, status=403)
             serializer = OsobaSerializer(osoba)
             return Response(serializer.data)
 
-        query_params = request.query_params
         queryset = Osoba.objects.filter(wlasciciel=request.user)
-
-        if "nazwa" in query_params:
-            queryset = queryset.filter(name__icontains=query_params["nazwa"])
+        if request.user.has_perm('app_name.can_view_other_persons'):
+            queryset = Osoba.objects.all()
 
         serializer = OsobaSerializer(queryset, many=True)
         return Response(serializer.data)
@@ -64,3 +65,16 @@ class StanowiskoMembersView(generics.ListAPIView):
     def get_queryset(self):
         stanowisko_id = self.kwargs['id']
         return Osoba.objects.filter(position_id=stanowisko_id, wlasciciel=self.request.user)
+
+
+
+
+def osoba_view(request, pk):
+    if not request.user.has_perm('app.view_osoba'): 
+        raise PermissionDenied("Nie masz uprawnień do wyświetlania obiektów Osoba.")
+    
+    try:
+        osoba = Osoba.objects.get(pk=pk)
+        return HttpResponse(f"Ten użytkownik nazywa się {osoba.name} {osoba.surname}.")
+    except Osoba.DoesNotExist:
+        return HttpResponse(f"W bazie nie ma użytkownika o id={pk}.")
