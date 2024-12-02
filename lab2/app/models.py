@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from datetime import date
+from django.contrib.auth.models import User
 
 # Create your models here.
 MONTHS = models.IntegerChoices('Miesiace', 'Styczeń Luty Marzec Kwiecień Maj Czerwiec Lipiec Sierpień Wrzesień Październik Listopad Grudzień')
@@ -52,6 +53,7 @@ class Osoba(models.Model):
     surname = models.CharField(max_length=50)
     position = models.ForeignKey(Position, on_delete=models.CASCADE)
     published_date = models.DateField(default=date.today)
+    owner = models.ForeignKey(User,on_delete=models.CASCADE)
 
     def clean(self):
         # Walidacja pola name - tylko litery
